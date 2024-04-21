@@ -1,6 +1,6 @@
 
 from typing import Dict, List, Optional, Union
-
+import logging
 import brotli
 import json
 import gzip
@@ -9,7 +9,8 @@ import requests
 import requests.structures
 import cloudscraper
 import time
-
+import httpx
+import ssl
 
 
 class APIRequest(object):
@@ -31,7 +32,8 @@ class APIRequest(object):
         cookies: Optional[Dict] = None,
         exclude_status_codes: List[int] = list(),
         retries: int = 10,
-        backoff_factor: int = 3
+        backoff_factor: int = 3,
+        debug: bool = False
     ):
 
         """
@@ -58,23 +60,43 @@ class APIRequest(object):
             "https":"127.0.0.1:8080",
             "http":"127.0.0.1:8080"
         }
+        # self.proxies = {
+        #     "http://": httpx.HTTPTransport(proxy="http://127.0.0.1:8080"),
+        #     "https://": httpx.HTTPTransport(proxy="http://127.0.0.1:8080"),
+        # }
+        if debug:
+            logging.basicConfig(
+                format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
+                datefmt="%Y-%m-%d %H:%M:%S",
+                level=logging.DEBUG
+            )
         self.retries = retries
         self.backoff_factor = backoff_factor
-        self.scraper = cloudscraper.CloudScraper()
+        self.scraper = cloudscraper.create_scraper(browser='chrome')
+        #self.make_request_with_retry()
+        self.context = ssl.create_default_context()
+        self.context.load_verify_locations(cafile="/home/madvillain/Downloads/ca.pem")
         self.make_request_with_retry()
-
+    def make_httpx_request(self):
+        with httpx.Client(http2=True) as client:
+            if self.request_params["params"]:
+                url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
+                self.__response = client.get(url_with_params, headers=self.request_params["headers"])
+            else:
+                self.__response = client.get(self.url, headers=self.request_params["headers"], cookies=self.request_params["cookies"])
+        print("made req")
+        return self.__response
     def make_request_with_retry(self):
         cnt = 60
         try:
-            s = self.scraper
+            s = requests.Session()
             retry_strategy = Retry(total=self.retries, backoff_factor=self.backoff_factor, status_forcelist=[402,409,503,520])
             s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
-            #s.proxies=self.proxies
             if self.request_params["params"]:
                 url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
                 self.__response = s.get(url_with_params, headers=self.request_params["headers"])
             else:
-                self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"], verify=True)
+                self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"])#, verify=False, proxies=self.proxies)
 
             return self.__response
         except Exception as e:
