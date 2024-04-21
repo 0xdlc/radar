@@ -21,7 +21,7 @@ def main():
     parser.add_argument('-track',required=False,nargs='?', const='true', metavar='more-detailed data', type=bool)
     parser.add_argument('-t', required=False, default=False, metavar='Number of Threads', type=int)
     parser.add_argument('-qgis', required=False, default=False, metavar='write flightradar24 file as qgis file', type=str)
-    parser.add_argument('-debug',required=False,nargs='?', const='true', metavar='debug Mode', type=bool)
+    parser.add_argument('-debug',required=False,nargs='?', const=True, metavar='debug Mode', type=bool)
     args = parser.parse_args()
     if args.flight:
         flight(
@@ -34,12 +34,13 @@ def main():
             debug=args.debug
             )
     if args.marine:
-        with alive_bar(len(bounds),spinner='twirls') as bar:
+        with alive_bar(1,length=3,stats=False,monitor=False) as bar:
             with ThreadPool(processes=args.t) as pool:
-                self = marine()
-                results = [pool.apply_async(marine.get_details, (self,bound,bar)) for bound in bounds]
-                for r in results:
-                    r.get()
+                while True:
+                    self = marine(debug=args.debug)
+                    results = [pool.apply_async(marine.fetcher, (self,bound,bar)) for bound in bounds]
+                    for r in results:
+                        r.get()
 
 if __name__ == "__main__":
     main()
