@@ -1,6 +1,5 @@
 import geojson
 from geojson import Feature, FeatureCollection,LineString, MultiPoint,Point
-from utils.set_details import set_detail
 import bson
 import os
 import datetime

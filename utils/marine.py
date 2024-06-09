@@ -26,6 +26,7 @@ class marine(object):
         self.base_url = 'https://www.marinetraffic.com'
         self.time = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
         self.debug = debug
+        self.ship_list = []
     
     def req(self,bound):
 
@@ -70,9 +71,10 @@ class marine(object):
                 with open(f"{output}/Radar_Data.bson", 'wb') as file:
                     file.write(bson.dumps(data))
         except Exception as e:
-            #TO-DO: ADD LOGGING HERE
-            error = traceback.format_exc()
-            print(f"[DEBUG]Marine get_details function Error: {error}")
+            error = f"[DEBUG-MARINE]Marine get_details function Error: {traceback.format_exc()}\n"
+            print(error)
+            with open('../logfile', 'a+') as file:
+                file.write(error)
 
     def update_details(self,data,output):
         try:
@@ -85,18 +87,18 @@ class marine(object):
             temp_list.append(data.pop('SPEED'))
             temp_list.append(self.time)
             with open(f"{output}/Radar_Data.bson", 'rb') as file:
-                a = bson.loads(file.read())
-                if temp_list[0] == a['trail'][0] and temp_list[1] == a['trail'][1]:
-                    return
-                a['trail'].append(temp_list)
-                a = bson.dumps(a)
+                    a = bson.loads(file.read())
+                    if temp_list[0] == a['trail'][0] and temp_list[1] == a['trail'][1]:
+                        return
+                    a['trail'].append(temp_list)
+                    a = bson.dumps(a)
             with open(f"{output}/Radar_Data.bson", 'wb') as file:
                 file.write(a)
         except Exception as e:
-            #TO-DO: ADD LOGGING HERE
-            error = traceback.format_exc()
-            print(f"[DEBUG]Marine get_details function Error: {error}")
-
+            error = f"[DEBUG-MARINE]Marine update_details function Error: {traceback.format_exc()}\n"
+            print(error)
+            with open('../logfile', 'a+') as file:
+                file.write(error)
 
     def fetcher(self, bound=None,bar=False):
         self.req(bound=bound)
@@ -106,10 +108,13 @@ class marine(object):
         for data in res2:
             output = os.path.join(self.output,data['SHIP_ID'])
             if len(data['SHIP_ID']) < 10:
-                if not os.path.exists(f"{output}"):
-                    self.save_details(data=data)
-                else:
-                    self.update_details(data=data,output=output)
+                if not data['SHIP_ID'] in self.ship_list:
+                    self.ship_list.append(data['SHIP_ID'])
+                    if not os.path.exists(f"{output}"):
+                        self.save_details(data=data)
+                    else:
+                        self.update_details(data=data,output=output)
+        print(len(self.ship_list))
         bar.title('[INF] Tracking Marines:')
         bar()
             

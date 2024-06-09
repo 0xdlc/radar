@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import argparse
-from utils.scraper import flight
 from utils.marine import marine
 from alive_progress import alive_bar
 from utils.bounds.marine_bounds import bounds 

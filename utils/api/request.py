@@ -1,7 +1,7 @@
 
 from typing import Dict, List, Optional, Union
 import logging
-import brotli
+#import brotli
 import json
 import gzip
 from requests.adapters import HTTPAdapter, Retry
@@ -17,11 +17,11 @@ class APIRequest(object):
     
     #Class to make requests to the Endpoints and Handle Network Errors
     
-    __content_encodings = {
-        "": lambda x: x,
-        "br": brotli.decompress,
-        "gzip": gzip.decompress
-    }
+    # __content_encodings = {
+    #     "": lambda x: x,
+    #     "br": brotli.decompress,
+    #     "gzip": gzip.decompress
+    # }
 
     def __init__(
         self,
