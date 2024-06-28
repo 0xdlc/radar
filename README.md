@@ -2,7 +2,9 @@
 Radar is an scraping tool that gathers Flight and Marine data from trusted sources like FlightRadar24 and marinetraffic.com and stores them in bson format for the least storage usage.
 
 # Usage:
-`python radar.py -flight`
+1. Clone the package
+2. go to the radar directory and run `python -r requirements.txt`.
+3. Run `python radar.py [-flight,-marine] -t (number) [-debug]` to start the radar.
 
 features:
 - You can determine the number of threads
@@ -11,5 +13,3 @@ features:
 - All the limitation are bypassed and incase of internet outage, the program will complete the data on the next connection.
 - Use -debug to see debug status.
 
-# To gather marine data:
-`python radar.py -marine`
