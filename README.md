@@ -1,5 +1,5 @@
 # radar 
-Radar is an scraping a tool that gathers Flight and Marine data from trusted sources like FlightRadar24 and marinetraffic.com and stores them in bson format for the least storage usage.
+Radar is an scraping tool that gathers Flight and Marine data from trusted sources like FlightRadar24 and marinetraffic.com and stores them in bson format for the least storage usage.
 
 # To gather Flight data:
 `python radar.py -flight`
