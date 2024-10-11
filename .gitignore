@@ -5,6 +5,7 @@ build/
 dist/
 wheels/
 *.egg-info
+
 marine_output
 GeoFiles
 output
@@ -12,5 +13,6 @@ Flight_output
 logfile
 .ruff_cache
 
+.DS_Store
 # venv
 .venv
