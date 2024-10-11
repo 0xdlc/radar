@@ -1,5 +1,4 @@
-import geojson
-from geojson import Feature, FeatureCollection,LineString, MultiPoint,Point
+from geojson import Feature, FeatureCollection,LineString, Point
 from utils.set_details import deset
 import bson
 import os

@@ -1,6 +1,6 @@
 from typing import Dict,Any
 
-class deset(dict):
+class set_detail(dict):
 
 
     def __init__(self, flight_details):
@@ -36,7 +36,7 @@ class deset(dict):
         orig_airport_timezone = self.__get_details(orig_airport.get("timezone"))
 
         # Get flight history.
-        history = self.__get_details(flight_details.get("flightHistory"))
+        self.__get_details(flight_details.get("flightHistory"))
 
         # Get flight status.
         status = self.__get_details(flight_details.get("status"))

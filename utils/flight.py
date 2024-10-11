@@ -1,25 +1,15 @@
 from FlightRadar24 import FlightRadar24API
 from multiprocessing.pool import ThreadPool
 from discord_webhook import DiscordWebhook, DiscordEmbed
-from requests.adapters import HTTPAdapter, Retry
 import requests
 from alive_progress import alive_bar
-import geojson
-from geojson import Feature, Point, FeatureCollection
-#import numpy as np
 import os
 from .bounds.flight_bounds import bounds as flight_bounds
 from typing import Optional
 from datetime import date
-import gzip
 import bson
 import threading
-import subprocess
-import argparse
-import json
 import time
-import random
-import ijson
 import traceback
 
 fr_api = FlightRadar24API(...)
@@ -50,7 +40,7 @@ def discord(title, description):
         description=description,
         color='65535')
     webhook.add_embed(embed)
-    response = webhook.execute()
+    webhook.execute()
 
 os.system('cls' if os.name == 'nt' else 'clear')
 def extract_values(obj,local_array):
@@ -90,11 +80,10 @@ def get_flights(bound,bar=False,update=reg_nums,local_array=[],debug=False):
     
         else:
             empty_regs.append(j.id)
-    if bar!=False:
+    if bar is not False:
         bar.title('[INF] Getting Flights:')
         bar()
 
-    temp_regnums=[]
 
 def handle_internet_outage(temp_data,local_array):
     
@@ -151,7 +140,7 @@ def update_path(reg_num,local_array):
 
                 get_details(_id=flight[0].id,bar=False,local_array=local_array)
             
-    except Exception as e:
+    except Exception:
         error = traceback.format_exc()
         #print(F"[DEBUG] ERROR IN update path FUNCTION: {reg_num}-{error}")
 
@@ -162,7 +151,7 @@ def update_path(reg_num,local_array):
 def get_details(_id,bar=False,local_array=[]):
     global temp_data 
 
-    if bar!=False:
+    if bar is not False:
         bar.title('[INF] Fetching Flight Data:')
         bar()
     try:
@@ -185,7 +174,7 @@ def get_details(_id,bar=False,local_array=[]):
                 departure = flight['trail'][0]['ts']
         else:
             return
-        if departure == 0 or departure == None:
+        if departure == 0 or departure is None:
             departure = str(time.time()).split('.')[0]
 
         if not os.path.exists(f"output/{reg_num}"):
@@ -198,7 +187,7 @@ def get_details(_id,bar=False,local_array=[]):
             file.write(bson.dumps(flight))
         local_array.value=[]
 
-    except Exception as e:
+    except Exception:
         error = traceback.format_exc()
         #print(F"[DEBUG] ERROR IN VERBOUSE FUNCTION: {e}")
         with open('logfile','a+') as file:
@@ -208,10 +197,10 @@ def handle_nones(_id,local_array=[]):
     try:
         flight = fr_api.get_flight_details(_id)
         if flight.get('time'):
-            departure = flight['time']['scheduled']['departure']
+            flight['time']['scheduled']['departure']
         elif flight.get('trail'):
             if len(flight['trail']) != 0:
-                departure = flight['trail'][0]['ts']
+                flight['trail'][0]['ts']
         else:
             return
 
@@ -219,7 +208,7 @@ def handle_nones(_id,local_array=[]):
         with open(f"output/No-Registration/{str(time.time()).split('.')[0]}_{_id}", "wb") as file:
             file.write(bson.dumps(flight))
             
-    except Exception as e:
+    except Exception:
         error = traceback.format_exc()
         #print(f'[DEBUG] ERROR IN Handle_Nones FUNCTION: {e}')
         with open('logfile','a+') as file:
@@ -245,8 +234,8 @@ def flight(
     global ids
     global counter
     global empty_regs
-    if not os.path.exists(f"output/No-Registration"):
-                os.makedirs(f"output/No-Registration")
+    if not os.path.exists("output/No-Registration"):
+                os.makedirs("output/No-Registration")
     if v:
             
         local_array = threading.local()
@@ -317,11 +306,8 @@ def flight(
         threads: int = 5
     ):
 
-        Headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36",
-        "Accept-Language": "en-US, en;q=0.5",
-        "Vessel-Image": "000f4a9e1bs81e7e1fbe47024f3615125330","X-Requested-With": "XMLHttpRequest"}
         
-        base_url='https://www.marinetraffic.com'
+        pass
 
 
 

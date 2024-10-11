@@ -1,12 +1,10 @@
-#!/usr/bin/env python
+#!/Users/Mo/.rye/shims/python
 import argparse
 from utils.marine import marine
 from utils.flight import flight
 from alive_progress import alive_bar
 from utils.bounds.marine_bounds import bounds 
-import time
 from multiprocessing.pool import ThreadPool
-from typing import List
 
 
 
@@ -15,7 +13,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-flight',required=False,nargs='?', const='true', metavar='flight-radar', type=bool)
     parser.add_argument('-marine',required=False,nargs='?', const='true', metavar='marine-radar', type=bool)
-    parser.add_argument('-o', required=False, default=False, metavar='output file', type=str)
+    parser.add_argument('-o', required=False, default="Flight_output", metavar='output file', type=str)
     parser.add_argument('-v',required=False,nargs='?', const='true', metavar='more-detailed data', type=bool)
     parser.add_argument('-airport',required=False,nargs='?', const='true', metavar='more-detailed data', type=bool)
     parser.add_argument('-track',required=False,nargs='?', const='true', metavar='more-detailed data', type=bool)

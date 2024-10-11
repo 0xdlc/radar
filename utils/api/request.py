@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Union
 import logging
 #import brotli
 import json
-import gzip
 from requests.adapters import HTTPAdapter, Retry
 import requests
 import requests.structures
@@ -57,8 +56,8 @@ class APIRequest(object):
             "cookies": cookies
         }
         self.proxies = {
-            "https":"127.0.0.1:8080",
-            "http":"127.0.0.1:8080"
+            "https":"socks5://127.0.0.1:9051",
+            "http":"socks5://127.0.0.1:9051"
         }
         # self.proxies = {
         #     "http://": httpx.HTTPTransport(proxy="http://127.0.0.1:8080"),
@@ -68,17 +67,59 @@ class APIRequest(object):
             logging.basicConfig(
                 format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
                 datefmt="%Y-%m-%d %H:%M:%S",
-                level=logging.DEBUG
+                level=logging.DEBUG,
+
             )
         self.retries = retries
         self.backoff_factor = backoff_factor
-        self.scraper = cloudscraper.create_scraper(browser='chrome')
-        #self.make_request_with_retry()
-        self.context = ssl.create_default_context()
-        self.context.load_verify_locations(cafile="/home/madvillain/Downloads/ca.pem")
+        #self.scraper = cloudscraper.create_scraper(browser='chrome')
         self.make_request_with_retry()
+        # self.make_httpx_request()
+        # self.test()
+
+
+    def test(self):
+        cnt = 60
+        try:
+            # Create a cloudscraper instance
+            scraper = cloudscraper.create_scraper()  # This will handle Cloudflare challenges
+
+            # Set up retry strategy
+            retry_strategy = Retry(total=self.retries, backoff_factor=self.backoff_factor, status_forcelist=[400])
+            adapter = HTTPAdapter(max_retries=retry_strategy)
+            
+            # Mount the adapter to the scraper
+            scraper.mount('https://', adapter)
+
+            # Construct the URL with parameters if they exist
+            if self.request_params["params"]:
+                self.url = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
+
+            # Make the request based on the method
+            if self.method == "post":
+                self.__response = scraper.post(
+                    self.url,
+                    headers=self.request_params["headers"],
+                    cookies=self.request_params["cookies"],
+                    verify=False
+                )
+            else:
+                self.__response = scraper.get(
+                    self.url,
+                    headers=self.request_params["headers"],
+                    cookies=self.request_params["cookies"],
+                    verify=False
+                )
+            
+            return self.__response
+
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return None  # Return None or handle the error as needed
+        
+
     def make_httpx_request(self):
-        with httpx.Client(http2=True) as client:
+        with httpx.Client(http2=False,proxy="https://127.0.0.1:8080") as client:
             if self.request_params["params"]:
                 url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
                 self.__response = client.get(url_with_params, headers=self.request_params["headers"])
@@ -86,17 +127,20 @@ class APIRequest(object):
                 self.__response = client.get(self.url, headers=self.request_params["headers"], cookies=self.request_params["cookies"])
         print("made req")
         return self.__response
+    
+
     def make_request_with_retry(self):
         cnt = 60
         try:
             s = requests.Session()
             retry_strategy = Retry(total=self.retries, backoff_factor=self.backoff_factor, status_forcelist=[402,409,503,520])
             s.mount('https://', HTTPAdapter(max_retries=retry_strategy))
+            s.proxies = self.proxies
             if self.request_params["params"]:
                 url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
-                self.__response = s.get(url_with_params, headers=self.request_params["headers"])
+                self.__response = s.get(url_with_params, headers=self.request_params["headers"])#,proxies=self.proxies)
             else:
-                self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"])#, verify=False, proxies=self.proxies)
+                self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"], verify=False)#, proxies=self.proxies)
 
             return self.__response
         except Exception as e:

@@ -1,14 +1,10 @@
 import time
 import datetime
-from geojson import Feature, Point, FeatureCollection
-import sys
-import threading
+from geojson import Point
 import os
 from .api.request import APIRequest     
 import bson
 from .api.cookie_jar import cookie
-from alive_progress import alive_bar
-from multiprocessing.pool import ThreadPool
 import traceback
 
 
@@ -21,7 +17,7 @@ class marine(object):
     ):
         self.output = os.path.join(os.getcwd(),output)
         self.Headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:123.0) Gecko/20100101 Firefox/123.0",
-        "Origin":"https://marinetraffic.com","Vessel-Image": "00c7885e5cc1f67312156576569fa2f77a30","X-Requested-With": "XMLHttpRequest"}
+        "Origin":"https://marinetraffic.com","Vessel-Image": "00f0ff2a29c8a706c125c587294eb530cc10","X-Requested-With": "XMLHttpRequest","Connection":"close"}
         self.cookies = cookie
         self.base_url = 'https://www.marinetraffic.com'
         self.time = datetime.datetime.utcfromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
@@ -30,7 +26,8 @@ class marine(object):
     
     def req(self,bound):
 
-        self.res = APIRequest(f"{self.base_url}{bound}",headers=self.Headers,cookies=self.cookies,debug=self.debug)
+        self.res = APIRequest(f"{self.base_url}{bound}",headers=self.Headers,debug=self.debug)
+        print(vars(self.res))
         if self.res._APIRequest__response.headers.get("Set-Cookie"):
             for i in self.res._APIRequest__response.headers["Set-Cookie"].split(";"):
                 if "__cf_bm" in i:
@@ -47,7 +44,7 @@ class marine(object):
             
     def save_details(self,data):
         try:
-            points = Point((float(data['LON']), float(data['LAT'])))
+            Point((float(data['LON']), float(data['LAT'])))
             
             temp_list=[]
             data.update({"trail":[]})
@@ -70,7 +67,7 @@ class marine(object):
                     os.makedirs(output)
                 with open(f"{output}/Radar_Data.bson", 'wb') as file:
                     file.write(bson.dumps(data))
-        except Exception as e:
+        except Exception:
             error = f"[DEBUG-MARINE]Marine get_details function Error: {traceback.format_exc()}\n"
             print(error)
             with open('../logfile', 'a+') as file:
@@ -78,7 +75,7 @@ class marine(object):
 
     def update_details(self,data,output):
         try:
-            points = Point((float(data['LON']), float(data['LAT'])))
+            Point((float(data['LON']), float(data['LAT'])))
 
             temp_list=[]
             temp_list.append(data.pop('LAT'))
@@ -94,7 +91,7 @@ class marine(object):
                     a = bson.dumps(a)
             with open(f"{output}/Radar_Data.bson", 'wb') as file:
                 file.write(a)
-        except Exception as e:
+        except Exception:
             error = f"[DEBUG-MARINE]Marine update_details function Error: {traceback.format_exc()}\n"
             print(error)
             with open('../logfile', 'a+') as file:
@@ -108,7 +105,7 @@ class marine(object):
         for data in res2:
             output = os.path.join(self.output,data['SHIP_ID'])
             if len(data['SHIP_ID']) < 10:
-                if not data['SHIP_ID'] in self.ship_list:
+                if data['SHIP_ID'] not in self.ship_list:
                     self.ship_list.append(data['SHIP_ID'])
                     if not os.path.exists(f"{output}"):
                         self.save_details(data=data)

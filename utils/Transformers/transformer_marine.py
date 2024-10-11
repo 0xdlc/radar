@@ -1,8 +1,6 @@
-import geojson
-from geojson import Feature, FeatureCollection,LineString, MultiPoint,Point
+from geojson import Feature, FeatureCollection,LineString, Point
 import bson
 import os
-import datetime
 import traceback
 
 #import mysql.connector
@@ -76,7 +74,7 @@ class transformer(object):
                         collection = self.Feature_collection(trail_list)
                         with open(f"{self.directory}/../GeoFiles/marine/{file}/Feature_Collection.geojson","w+",encoding='utf-8') as openfile:
                             openfile.write(str(collection))
-                except Exception as e:
+                except Exception:
                     error = traceback.format_exc()
                     print(F"[DEBUG] ERROR IN FileTransformer :\n {openfile} {error}")
 

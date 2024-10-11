@@ -1,5 +1,4 @@
-import geojson
-from geojson import Feature, FeatureCollection,LineString, MultiPoint,Point
+from geojson import Feature, FeatureCollection,LineString, Point
 from utils.set_details import set_detail
 import bson
 import os
@@ -54,19 +53,19 @@ class transformer(object):
                 try:
                     trail_list=[]
                     file_path = os.path.join(root, file)
-                    output_path = os.path.join(self.directory,f"/GeoFiles/Flight/{file}")
-
+                    output_path = os.path.join(self.directory,f"GeoFiles/Flight/{file}")
+                    print(output_path)
                     with open(file_path, 'rb+') as openfile :
                         props = bson.loads(openfile.read())
                         if self.country:
-                            output_path = os.path.join(self.directory,f"/GeoFiles/Flight/{self.country}/{file}")
+                            output_path = os.path.join(self.directory,f"GeoFiles/Flight/{self.country}/{file}")
                             try:
                                 if props["airport"]["origin"]["position"]["country"]["name"] != self.country :
                                     continue 
                             except:
                                 continue
                         if self.airline:
-                            output_path = os.path.join(self.directory,f"/GeoFiles/Flight/{self.airline}/{file}")
+                            output_path = os.path.join(self.directory,f"GeoFiles/Flight/{self.airline}/{file}")
                             try:
                                 if props["airline"]["name"] != self.airline :
                                     continue 
@@ -102,7 +101,7 @@ class transformer(object):
                             collection = self.Feature_collection(trail_list)
                             with open(f"{output_path}/Feature_Collection.geojson","w+",encoding='utf-8') as openfile:
                                 openfile.write(str(collection))
-                except Exception as e:
+                except Exception:
                     error = traceback.format_exc()
                     print(f"[DEBUG] ERROR IN FileTransformerer2 :\n {file_path} {error}")
                     # with open('logfile','a+') as file:

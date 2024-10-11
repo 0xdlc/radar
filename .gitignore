@@ -1,0 +1,16 @@
+# python generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+marine_output
+GeoFiles
+output
+Flight_output
+logfile
+.ruff_cache
+
+# venv
+.venv
