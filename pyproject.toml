@@ -21,6 +21,10 @@ dependencies = [
     "bson>=0.5.10",
     "scrapy>=2.11.2",
     "ipython>=8.27.0",
+    "socksio>=1.0.0",
+    "blinker==1.7.0",
+    "curl-cffi>=0.7.3",
+    "redis>=5.2.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

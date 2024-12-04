@@ -5,6 +5,7 @@ from utils.flight import flight
 from alive_progress import alive_bar
 from utils.bounds.marine_bounds import bounds 
 from multiprocessing.pool import ThreadPool
+import redis
 
 
 
@@ -32,13 +33,15 @@ def main():
             debug=args.debug
             )
     if args.marine:
+        red = redis.Redis(host="127.0.0.1", port=6379, db=0)
         with alive_bar(1,length=3,stats=False,monitor=False) as bar:
             with ThreadPool(processes=args.t) as pool:
                 while True:
                     self = marine(debug=args.debug)
-                    results = [pool.apply_async(marine.fetcher, (self,bound,bar)) for bound in bounds]
+                    results = [pool.apply_async(marine.request_api, (self,bound,bar)) for bound in bounds]
                     for r in results:
                         r.get()
+                    
 
 if __name__ == "__main__":
     main()

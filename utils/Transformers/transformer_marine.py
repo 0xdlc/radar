@@ -2,6 +2,7 @@ from geojson import Feature, FeatureCollection,LineString, Point
 import bson
 import os
 import traceback
+import time
 
 #import mysql.connector
   
@@ -40,8 +41,10 @@ class transformer(object):
         self._dict={}
         for root, dirs, files in os.walk(self.directory):
             if root==f"{self.directory}/GeoFiles/marine":
+                print(f"skipping:{root}")
                 continue
             for file in files:
+                print(f"{file}")
                 try:
                     trail_list=[]
                     file_path = os.path.join(root, file)
@@ -50,29 +53,33 @@ class transformer(object):
                         trails = props.pop('trail')  
                         self.extract_values(props)
                         if trails:
+                            begining_time = int(time.mktime((int(trails[0][4][0:4]), int(trails[0][4][4:6]), int(trails[0][4][6:8]), int(trails[0][4][8:10]), int(trails[0][4][10:12]), int(trails[0][4][12:14]), 0, 0, 0)))
                             for trail in trails:
                                 for i in trail:
                                     if i=='N/A':
                                         trail[trail.index('N/A')]=0
-                                trail_list.append((float(trail[1]), float(trail[0])))  
+                                timestamp = int(time.mktime((int(trail[4][0:4]), int(trail[4][4:6]), int(trail[4][6:8]), int(trail[4][8:10]), int(trail[4][10:12]), int(trail[4][12:14]), 0, 0, 0)))
+                                angle = int(trail[3]) if trail[3] is not None else [0]
+                                trail_list.append((float(trail[1]), float(trail[0]),timestamp,angle)) 
                                 """
-                                Note:
+                                Note:   
                                 In GeoJSON format, coordinates are ordered in longitude-latitude format, 
                                 the same as X-Y coordinates in mathematics. But this is the opposite of Google Maps and some other web map tools, 
                                 which place coordinate values in latitude-longitude format.
                                 """
                         else:
                             continue
-                        file = props["SHIP_ID"]
+                        folder = props["SHIP_ID"]
+                        file = begining_time
                         transformed_data = self.line_transform(trail_list, self._dict)
-                        if not os.path.exists(f"{self.directory}/../GeoFiles/marine/{file}/"):
-                            os.makedirs(f"{self.directory}/../GeoFiles/marine/{file}/")
-                        with open(f"{self.directory}/../GeoFiles/marine/{file}/LineString.geojson","w+",encoding='utf-8') as openfile:
+                        if not os.path.exists(f"{self.directory}/../GeoFiles/marine/{folder}/{file}/"):
+                            os.makedirs(f"{self.directory}/../GeoFiles/marine/{folder}/{file}/")
+                        with open(f"{self.directory}/../GeoFiles/marine/{folder}/{file}/LineString.geojson","w+",encoding='utf-8') as openfile:
                             openfile.write(str(transformed_data))
                         
                         
                         collection = self.Feature_collection(trail_list)
-                        with open(f"{self.directory}/../GeoFiles/marine/{file}/Feature_Collection.geojson","w+",encoding='utf-8') as openfile:
+                        with open(f"{self.directory}/../GeoFiles/marine/{folder}/{file}/Feature_Collection.geojson","w+",encoding='utf-8') as openfile:
                             openfile.write(str(collection))
                 except Exception:
                     error = traceback.format_exc()

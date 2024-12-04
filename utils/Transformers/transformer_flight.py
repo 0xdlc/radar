@@ -1,5 +1,5 @@
 from geojson import Feature, FeatureCollection,LineString, Point
-from utils.set_details import set_detail
+from set_details import set_detail
 import bson
 import os
 import datetime
@@ -41,8 +41,6 @@ class transformer(object):
         if not os.path.exists(f"{self.directory}/GeoFiles/Flight"):
                 os.makedirs(f"{self.directory}/GeoFiles/Flight")
 
-
-
     def trans_flight(self):
         #global _dict
         self._dict={}
@@ -50,12 +48,11 @@ class transformer(object):
             if root==f"{self.directory}/GeoFiles/Flight":
                 continue
             for file in files:
+            
                 try:
                     trail_list=[]
                     file_path = os.path.join(root, file)
-                    output_path = os.path.join(self.directory,f"GeoFiles/Flight/{file}")
-                    print(output_path)
-                    with open(file_path, 'rb+') as openfile :
+                    with open(file_path, 'rb+') as openfile:
                         props = bson.loads(openfile.read())
                         if self.country:
                             output_path = os.path.join(self.directory,f"GeoFiles/Flight/{self.country}/{file}")
@@ -71,8 +68,10 @@ class transformer(object):
                                     continue 
                             except:
                                 continue
+                        flight_id = props["identification"]["id"]
                         trails = props.pop('trail')  
                         props = vars(set_detail(props))
+                        output_path = os.path.join(self.directory,f"GeoFiles/Flight/{flight_id}/{file}")
                         self.extract_values(props)
                         if trails:
                             for trail in trails:
@@ -82,12 +81,6 @@ class transformer(object):
 
                                 trail_list.append((trail[1], trail[0], trail[4], trail[5]))
 
-                                """
-                                Note:
-                                In GeoJSON format, coordinates are ordered in longitude-latitude format, 
-                                the same as X-Y coordinates in mathematics. But this is the opposite of Google Maps and some other web map tools, 
-                                which place coordinate values in latitude-longitude format.
-                                """
                         else:
                             continue
                         

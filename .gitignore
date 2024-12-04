@@ -6,13 +6,15 @@ dist/
 wheels/
 *.egg-info
 
+radarf.py
+MarineTraffic
 marine_output
 GeoFiles
 output
 Flight_output
 logfile
 .ruff_cache
-
+chromedriver
 .DS_Store
 # venv
 .venv
