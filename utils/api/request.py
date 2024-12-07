@@ -165,8 +165,7 @@ class APIRequest(object):
             return self.__response
         except Exception as e:
             if self.return_error_code:
-                self._handle_exception(e, self.url)
-                return e
+                return self._handle_exception(e, self.url)
             else:
                 self._handle_exception(e, self.url)            
 
@@ -207,46 +206,42 @@ class APIRequest(object):
                 self._handle_exception(e, self.url)       
 
     def curl_cffi_request(self):
-        try:
-            s = cffi_requests.Session(proxies=self.proxies, timeout=self.timeout, verify=self.verify)
-            s.proxies = self.proxies
-            if self.method=="POST":
-                if self.request_params["json"]:
-                    self.__response = s.post(self.url,headers=self.request_params["headers"], 
-                           cookies=self.request_params["cookies"], 
-                           json=self.request_params["json"])
-                if self.request_params["data"]:
-                    self.__response = s.post(self.url,headers=self.request_params["headers"], 
-                                            cookies=self.request_params["cookies"], 
-                                            data=self.request_params["data"])
-            else:
-                if self.request_params["params"]:
-                    url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
-                    self.__response = s.get(url_with_params,
-                                            headers=self.request_params["headers"],
-                                            cookies=self.request_params['cookies'],
-                                            )
-
+        while True:
+            try:
+                s = cffi_requests.Session(proxies=self.proxies, timeout=self.timeout, verify=self.verify)
+                s.proxies = self.proxies
+                if self.method=="POST":
+                    if self.request_params["json"]:
+                        self.__response = s.post(self.url,headers=self.request_params["headers"], 
+                            cookies=self.request_params["cookies"], 
+                            json=self.request_params["json"])
+                    if self.request_params["data"]:
+                        self.__response = s.post(self.url,headers=self.request_params["headers"], 
+                                                cookies=self.request_params["cookies"], 
+                                                data=self.request_params["data"])
                 else:
-                    self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"])#, proxies=self.proxies)#verify="cert.pub"
-            if self.__response.status_code not in self.status_forcelist:
-                return self.get_content()
-            else:
-                self.retries-=1
-                while True:
-                    if self.retries < 1 or self.__response not in self.status_forcelist:
-                        break
+                    if self.request_params["params"]:
+                        url_with_params = self.url + "?" + "&".join(["{}={}".format(k, v) for k, v in self.request_params["params"].items()])
+                        self.__response = s.get(url_with_params,
+                                                headers=self.request_params["headers"],
+                                                cookies=self.request_params['cookies'],
+                                                )
+
+                    else:
+                        self.__response = s.get(self.url, headers=self.request_params["headers"],cookies=self.request_params["cookies"])#, proxies=self.proxies)#verify="cert.pub"
+                if self.retries < 1 or self.__response.status_code not in self.status_forcelist:
+                    return self.get_content()
+                else:
+                    self.retries-=1
                     self.__response.close()
                     time.sleep(self.backoff_factor)
-
-                
-                
-
-        except Exception as e:
-            if self.return_error_code:
-                return self._handle_exception(e, self.url)
-            else:
-                self._handle_exception(e, self.url)
+                    continue                  
+                    
+            except Exception as e:
+                if self.return_error_code:
+                    return self._handle_exception(e, self.url)
+                else:
+                    self._handle_exception(e, self.url)
 
     def get_content(self) -> Union[Dict, bytes]:
         """
