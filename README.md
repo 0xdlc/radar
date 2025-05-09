@@ -7,7 +7,7 @@ Radar is a program that gathers Flight and Marine data from trusted sources like
 3. Run `python radar.py [-flight,-marine] -t (number) [-debug]` to start the radar.
 
 features:
-- You can determine the number of threads
+- You can specify the number of threads
 - Flight data will be saved in flight_output folder and marine will be in marine_output
 - You can transform the raw data into Geojson format (Incase you want to use them in Qgis and Arcgis apps),  
 - All limitations are bypassed and incase of internet outage, the program will complete the data on the next connection.
